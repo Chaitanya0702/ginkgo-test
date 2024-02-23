@@ -4,4 +4,4 @@ metadata:
   name: validate-xp-mrs.mycompany.tld
 spec:
   operations: ["CREATE", "UPDATE"]
-  resources: ["*"]
+  resources: ["composition"]
