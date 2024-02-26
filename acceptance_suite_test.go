@@ -4,15 +4,14 @@ import (
 	// "bytes"
 	// "context"
 	// "os"
-	"os/exec"
+	k8s "github.com/gruntwork-io/terratest/modules/k8s"
 	"testing"
-	"time"
 
+	"github.com/gruntwork-io/terratest/modules/logger"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 )
-
 
 func TestAcceptance(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -20,36 +19,27 @@ func TestAcceptance(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	// err := 0
-	// if err != nil {
-	// 	Fail("Error in getting access token: " + err.Error())
-	// }
+	logrus.Debug("Deploy the policy before the suite")
 	deployJsPolicies()
 })
 
 var _ = AfterSuite(func() {
-	// deleteJsPolicies()
-	logrus.Info("Nothing to be done")
+	deleteJsPolicies()
+	logrus.Debug("delete the policy after the suite")
 })
 
 func deployJsPolicies() {
-	logrus.Info("Deploying jspolicies")
-	cmd := exec.Command("kubectl", "apply", "-f", "policies")
-	time.Sleep(time.Second)
-	err := cmd.Run()
-	if err != nil {
-		Fail("Error in applying in policies: " + err.Error())
-	}
-	logrus.Info("Deployed jspolicies")
+	logrus.Debug("Deploying jspolicies")
+	k8sOptions := &k8s.KubectlOptions{Logger: logger.Discard}
+	_err := k8s.KubectlApplyE(GinkgoT(), k8sOptions, "policies")
+	Expect(_err).NotTo(HaveOccurred())
+	logrus.Debug("Deployed jspolicies")
 }
 
 func deleteJsPolicies() {
-	logrus.Info("Deleting jspolicies")
-	cmd := exec.Command("kubectl", "delete", "-f", "policies")
-	time.Sleep(time.Second)
-	err := cmd.Run()
-	if err != nil {
-		Fail("Error in deleting in policies: " + err.Error())
-	}
-	logrus.Info("Deleted jspolicies")
+	logrus.Debug("Deleting jspolicies")
+	k8sOptions := &k8s.KubectlOptions{Logger: logger.Discard}
+	_err := k8s.KubectlDeleteE(GinkgoT(), k8sOptions, "policies")
+	Expect(_err).NotTo(HaveOccurred())
+	logrus.Debug("Deleted jspolicies")
 }
